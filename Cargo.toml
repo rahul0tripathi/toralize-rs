@@ -1,8 +1,16 @@
 [package]
-name = "toralize-rs"
+name = "toralize"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+libc = "0.2.155"
+redhook = "2.0"
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["dylib"]
+
+[[bin]]
+name="toralized"
+path="src/main.rs"
