@@ -3,21 +3,7 @@ mod types;
 
 use types::*;
 
-extern "C" {
-    fn ntohs(netshort: std::os::raw::c_uint) -> os::raw::c_uint;
-    fn inet_addr(cp: *const libc::c_char) -> std::os::raw::c_uint;
-    fn socket(
-        domain: std::os::raw::c_int,
-        sock_type: std::os::raw::c_int,
-        protocol: std::os::raw::c_int,
-    ) -> std::os::raw::c_int;
-    fn connect(
-        socket: std::os::raw::c_int,
-        sockaddr: *mut Socket,
-        len: std::os::raw::c_uint,
-    ) -> std::os::raw::c_int;
-    fn perror(msg: *const libc::c_char);
-}
+
 
 fn main() {
     unsafe {

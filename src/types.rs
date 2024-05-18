@@ -1,4 +1,4 @@
-
+use std::os;
 
 pub const AF_INET: u8 = 2;
 
@@ -35,4 +35,20 @@ pub struct Socket {
     pub sin_family: libc::c_short,
     pub sin_port: libc::c_ushort,
     pub sin_addr: InAddr,
+}
+
+extern "C" {
+    pub fn ntohs(netshort: std::os::raw::c_uint) -> os::raw::c_uint;
+    pub fn inet_addr(cp: *const libc::c_char) -> std::os::raw::c_uint;
+    pub fn socket(
+        domain: std::os::raw::c_int,
+        sock_type: std::os::raw::c_int,
+        protocol: std::os::raw::c_int,
+    ) -> std::os::raw::c_int;
+    pub fn connect(
+        socket: std::os::raw::c_int,
+        sockaddr: *mut Socket,
+        len: std::os::raw::c_uint,
+    ) -> std::os::raw::c_int;
+    pub fn perror(msg: *const libc::c_char);
 }
