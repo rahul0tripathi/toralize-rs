@@ -9,7 +9,7 @@ run:
 .PHONY: build-client
 build-client:
 	@ mkdir -p .build
-	@ gcc toralize/connect.c -o .build/sample
+	@ gcc toralize/connect.c -o .build/sample -lcurl
 
 .PHONY: run-client
 run-client: build-client

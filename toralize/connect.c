@@ -1,38 +1,26 @@
-#include <arpa/inet.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#define PORT 8484
- 
-int main(int argc, char const* argv[])
+#include <curl/curl.h>
+
+int main(void)
 {
-    int status, valread, client_fd;
-    struct sockaddr_in serv_addr;
+  CURL *curl;
+  CURLcode res;
 
-    if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
- 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
+  curl = curl_easy_init();
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, "http://ifconfig.me/");
+    /* ifconfig.me is redirected, so we tell libcurl to follow redirection */
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
-        printf(
-            "\nInvalid address/ Address not supported \n");
-        return -1;
-    }
- 
-    if ((status
-         = connect(client_fd, (struct sockaddr*)&serv_addr,
-                   sizeof(serv_addr)))
-        < 0) {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
+    /* Perform the request, res gets the return code */
+    res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
 
-    printf("connected \n");
-    close(client_fd);
-    return 0;
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+  }
+  return 0;
 }
