@@ -1,14 +1,12 @@
 use std::net::{Ipv4Addr, TcpStream};
 use std::os::fd::AsRawFd;
 use std::str::FromStr;
-use libc::c_char;
+
+use tor_proxy::*;
+pub use types::*;
 
 mod types;
 mod tor_proxy;
-
-pub use types::*;
-use tor_proxy::*;
-
 
 redhook::hook! {
     unsafe fn connect(socket: libc::c_int, sockaddr: *mut libc::sockaddr, len: libc::c_uint) -> libc::c_int => conn {
@@ -25,16 +23,19 @@ redhook::hook! {
 
         println!("routing via tor proxy fd: {:?} dst: {}", socket, format!("{}:{}", addr_native, port_num));
 
+        // connect to the tor proxy
         let mut stream = TcpStream::connect(format!("{}:{}", PROXY_ADDR, PROXY_PORT)).expect("failed to connect to proxy");
 
-
+        // mirror the original fd and the proxy fd
+        // to create a duplex channel
         if dup2(stream.as_raw_fd(), socket) < 0 {
             println!("failed to call dup2 wit params old: {:?} new: {:?}",stream.as_raw_fd(), socket);
             perror(c"dup2 perror".as_ptr());
             return -1;
         }
 
-        let res = proxy(port_num,addr_native,stream);
+        // initiate socks4 connect
+        let res = socks4connect(port_num,addr_native,stream);
         match res {
         Ok(_) => {},
         Err(err) => {
@@ -43,7 +44,8 @@ redhook::hook! {
             }
         }
 
-        println!("bridged socks");
+        // return success if proxy succeeds
+        println!("successfully connected to proxy");
         return 0;
     }
 }

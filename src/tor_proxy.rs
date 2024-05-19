@@ -9,7 +9,7 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 const UNAME: &[u8] = "TORALIZERS".as_bytes();
 
 
-pub fn proxy(dst_port: u16, dst_address: Ipv4Addr, mut stream: TcpStream) -> io::Result<()>  {
+pub fn socks4connect(dst_port: u16, dst_address: Ipv4Addr, mut stream: TcpStream) -> io::Result<()>  {
     stream.set_nodelay(true)?;
 
     /*
@@ -62,7 +62,7 @@ pub fn proxy(dst_port: u16, dst_address: Ipv4Addr, mut stream: TcpStream) -> io:
 mod tests {
     use std::net::{Ipv4Addr, TcpStream};
     use std::str::FromStr;
-    use crate::tor_proxy::{proxy};
+    use crate::tor_proxy::{socks4connect};
     use crate::types::{ PROXY_ADDR, PROXY_PORT};
 
     #[test]
@@ -70,6 +70,6 @@ mod tests {
         let  port: u16 = 80;
         let  addr = Ipv4Addr::from_str("34.117.118.45").unwrap();
         let stream = TcpStream::connect(format!("{}:{}", PROXY_ADDR, PROXY_PORT)).unwrap();
-        proxy(port,addr,stream).unwrap();
+        socks4connect(port,addr,stream).unwrap();
     }
 }
