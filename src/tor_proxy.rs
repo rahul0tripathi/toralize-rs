@@ -12,6 +12,16 @@ const UNAME: &[u8] = "TORALIZERS".as_bytes();
 pub fn proxy(dst_port: u16, dst_address: Ipv4Addr, mut stream: TcpStream) -> io::Result<()>  {
     stream.set_nodelay(true)?;
 
+    /*
+        socks4_frame: a socks4 frame where VN = 4, CD = 1, connect command and other fields,
+        NULL is u8 with all 0s
+        SOCKS request layout:
+                +----+----+----+----+----+----+----+----+----+----+....+----+
+                | VN | CD | DSTPORT |      DSTIP        | USERID       |NULL|
+                +----+----+----+----+----+----+----+----+----+----+....+----+
+                   1    1      2              4           variable       1
+    */
+
     let mut socks4_frame: Vec<u8> = Vec::new();
     socks4_frame.write_u8(4)?;
     socks4_frame.write_u8(1)?;
@@ -26,10 +36,20 @@ pub fn proxy(dst_port: u16, dst_address: Ipv4Addr, mut stream: TcpStream) -> io:
     stream.read_exact(&mut response)?;
     let mut response = &response[..];
 
+    // response VN should be 0
     if response.read_u8().unwrap() != 0 {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "invalid response version"));
     }
 
+    /*
+    read CD code from the response and parse as following:
+            90: request granted
+            91: request rejected or failed
+            92: request rejected because the SOCKS server cannot connect to
+                identd on the client
+            93: request rejected because the client program and identd
+                report different user-ids
+    */
     if response[0] != 90 {
         return Err(io::Error::new(io::ErrorKind::Other, format!("connection failed with status code: {}", response[0])));
     }
