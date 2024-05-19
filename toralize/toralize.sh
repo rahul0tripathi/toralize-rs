@@ -1,8 +1,7 @@
 #!/bin/bash
 
 export DYLD_INSERT_LIBRARIES=$PWD/target/debug/libtoralize.dylib
-
-echo "CUSTOM DYLIB" $DYLD_INSERT_LIBRARIES
+echo "CUSTOM DYLIB LOADED"
 # shellcheck disable=SC2068
 ${@}
 
